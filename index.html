@@ -169,6 +169,19 @@
         </div>
     </div>
 
+    <!-- Modal Pembayaran Selesai -->
+    <div id="success-modal" class="fixed inset-0 z-50 items-center justify-center hidden bg-black bg-opacity-50">
+        <div class="bg-white rounded-lg shadow-lg p-8 w-11/12 max-w-sm text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                <i data-lucide="check" class="h-8 w-8 text-green-600"></i>
+            </div>
+            <h3 class="text-xl font-bold">Pembayaran Selesai!</h3>
+            <p class="text-gray-600 mt-2">Terima kasih, pembayaran Anda telah berhasil kami verifikasi.</p>
+            <button id="btn-close-success-modal" class="mt-6 w-full bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">OK</button>
+        </div>
+    </div>
+
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -208,6 +221,9 @@
         const paymentModal = document.getElementById('payment-modal');
         const btnClosePaymentModal = document.getElementById('btn-close-payment-modal');
         const btnConfirmPaymentWa = document.getElementById('btn-confirm-payment-wa');
+
+        const successModal = document.getElementById('success-modal');
+        const btnCloseSuccessModal = document.getElementById('btn-close-success-modal');
 
         const showToast = (message, type = 'success') => {
             const toast = document.getElementById('toast'), msg = document.getElementById('toast-message');
@@ -252,34 +268,44 @@
             return `${startDate.toLocaleDateString('id-ID', options)} - ${endDate.toLocaleDateString('id-ID', options)}`;
         }
 
-        const renderInvoices = (invoices) => {
+        const renderInvoices = (allInvoices) => {
             const tbody = document.getElementById('invoice-table-body');
-            const filteredInvoices = invoices.filter(inv => inv.status !== 'menunggu konfirmasi');
             
-            if (!filteredInvoices.length) {
+            // Filter out lunas invoices before rendering
+            const invoicesToDisplay = allInvoices.filter(inv => inv.status !== 'lunas');
+            
+            if (!invoicesToDisplay.length) {
                 tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-500">Selamat, tidak ada tagihan yang perlu dibayar saat ini.</td></tr>`;
-                const pendingInvoices = invoices.filter(inv => inv.status === 'menunggu konfirmasi');
-                if (pendingInvoices.length > 0) {
-                     tbody.innerHTML += `<tr><td colspan="4" class="p-4 text-center text-blue-600 bg-blue-50">Anda memiliki ${pendingInvoices.length} tagihan yang sedang menunggu verifikasi.</td></tr>`;
-                }
                 return;
             }
 
-            tbody.innerHTML = filteredInvoices
-                .sort((a,b) => b.periode.localeCompare(a.periode))
+            tbody.innerHTML = invoicesToDisplay
+                .sort((a,b) => {
+                    if (a.status === 'belum lunas' && b.status !== 'belum lunas') return -1;
+                    if (a.status !== 'belum lunas' && b.status === 'belum lunas') return 1;
+                    return b.periode.localeCompare(a.periode);
+                })
                 .map(inv => {
-                    const actionBtn = `<button class="btn-pay-invoice bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm w-full" data-id="${inv.id}">Bayar Sekarang</button>`;
+                    let statusText, statusClass, actionHtml;
+
+                    if (inv.status === 'menunggu konfirmasi') {
+                        statusText = 'Menunggu Verifikasi';
+                        statusClass = 'bg-blue-100 text-blue-800';
+                        actionHtml = `<span class="text-sm text-gray-500 italic">Diproses</span>`;
+                    } else { // 'belum lunas'
+                        statusText = 'Belum Lunas';
+                        statusClass = 'bg-red-100 text-red-800';
+                        actionHtml = `<button class="btn-pay-invoice bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm w-full" data-id="${inv.id}">Bayar Sekarang</button>`;
+                    }
+
                     return `<tr>
                         <td data-label="Periode Layanan">${getBillingPeriodText(inv)}</td>
                         <td data-label="Jumlah">${formatRupiah(inv.jumlah)}</td>
-                        <td data-label="Status"><span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">${inv.status}</span></td>
-                        <td data-label="Aksi">${actionBtn}</td>
+                        <td data-label="Status"><span class="px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">${statusText}</span></td>
+                        <td data-label="Aksi">${actionHtml}</td>
                     </tr>`;
                 }).join('');
-             const pendingInvoices = invoices.filter(inv => inv.status === 'menunggu konfirmasi');
-             if (pendingInvoices.length > 0) {
-                tbody.innerHTML += `<tr><td colspan="4" class="p-4 text-center text-blue-600 bg-blue-50">Anda memiliki ${pendingInvoices.length} tagihan yang sedang menunggu verifikasi.</td></tr>`;
-             }
+                
             lucide.createIcons();
         };
         
@@ -320,10 +346,22 @@
                     inputSection.classList.add('hidden');
                     detailsSection.classList.remove('hidden');
 
-                    const invoiceQuery = query(getCollectionRef('invoices'), where("pelangganId", "==", currentCustomer.id), where("status", "in", ["belum lunas", "menunggu konfirmasi"]));
+                    const invoiceQuery = query(getCollectionRef('invoices'), where("pelangganId", "==", currentCustomer.id));
                     if(unsubscribeInvoices) unsubscribeInvoices();
                     unsubscribeInvoices = onSnapshot(invoiceQuery, (snapshot) => {
-                        currentCustomerInvoices = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        const newInvoices = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                        if (currentCustomerInvoices.length > 0) {
+                            newInvoices.forEach(newInvoice => {
+                                const oldInvoice = currentCustomerInvoices.find(old => old.id === newInvoice.id);
+                                if (oldInvoice && oldInvoice.status === 'menunggu konfirmasi' && newInvoice.status === 'lunas') {
+                                    successModal.style.display = 'flex';
+                                    lucide.createIcons();
+                                }
+                            });
+                        }
+                        
+                        currentCustomerInvoices = newInvoices;
                         renderInvoices(currentCustomerInvoices);
                     });
                 }
@@ -340,7 +378,6 @@
         const handleWhatsAppRedirect = async () => {
             if (!invoiceToPay || !currentCustomer) return;
             
-            // Nomor WhatsApp Admin Anda
             const adminWhatsappNumber = '6288973378384'; 
 
             const message = `Halo Admin, saya ingin konfirmasi pembayaran untuk:
@@ -355,13 +392,11 @@ Berikut bukti transfernya. Terima kasih.`;
             const whatsappUrl = `https://wa.me/${adminWhatsappNumber}?text=${encodeURIComponent(message)}`;
             
             try {
-                // Update status di database SEBELUM redirect
                 const invoiceRef = doc(db, dataContainerPath, 'invoices', invoiceToPay.id);
                 await updateDoc(invoiceRef, {
                     status: 'menunggu konfirmasi'
                 });
                 
-                // Buka WhatsApp di tab baru
                 window.open(whatsappUrl, '_blank');
                 
                 closePaymentModal();
@@ -414,6 +449,10 @@ Berikut bukti transfernya. Terima kasih.`;
         
         btnConfirmPaymentWa.addEventListener('click', handleWhatsAppRedirect);
         
+        btnCloseSuccessModal.addEventListener('click', () => {
+            successModal.style.display = 'none';
+        });
+
         // Initialize
         lucide.createIcons();
         signInAnonymously(auth).catch((error) => {
