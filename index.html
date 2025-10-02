@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JagaNetwork - Cek & Bayar Tagihan</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        @media (max-width: 639px) {
+            .responsive-table thead { display: none; }
+            .responsive-table tbody tr {
+                display: block; margin-bottom: 1rem; border: 1px solid #e5e7eb;
+                border-radius: 0.5rem; padding: 0.5rem;
+                box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            }
+            .responsive-table tbody td {
+                display: flex; justify-content: space-between; align-items: center;
+                padding: 0.75rem; text-align: right;
+            }
+            .responsive-table tbody td:not(:last-child) { border-bottom: 1px solid #f3f4f6; }
+            .responsive-table tbody td::before {
+                content: attr(data-label); font-weight: 600; text-align: left;
+                margin-right: 1rem; color: #6b7280;
+            }
+            .responsive-table tbody td[data-label="Status"] span { flex-shrink: 0; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 sm:p-6 md:p-8 max-w-2xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-indigo-600">JagaNetwork</h1>
+            <p class="text-gray-500 mt-2">Portal Pembayaran Tagihan Pelanggan</p>
+        </header>
+
+        <main>
+            <!-- Input ID Section -->
+            <div id="customer-id-input-section" class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4">Cek Tagihan Anda</h2>
+                <p class="text-gray-600 mb-4">Silakan masukkan ID Pelanggan Anda untuk melihat detail tagihan.</p>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <input type="text" id="customer-id-input" placeholder="Masukkan 5 digit ID Pelanggan" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" maxlength="5">
+                    <button id="check-invoice-btn" class="w-full sm:w-auto bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition duration-300 font-medium flex items-center justify-center">
+                        <i data-lucide="search" class="w-5 h-5 mr-2"></i>Cek Tagihan
+                    </button>
+                </div>
+                <p id="error-message" class="text-red-500 text-sm mt-2 h-4"></p>
+            </div>
+
+            <!-- Invoice Details Section -->
+            <div id="invoice-details-section" class="hidden mt-8">
+                <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                    <h3 class="text-lg font-semibold border-b pb-3 mb-4">Detail Pelanggan</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-500">ID Pelanggan</p>
+                            <p id="detail-customer-id" class="font-semibold"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Nama</p>
+                            <p id="detail-customer-name" class="font-semibold"></p>
+                        </div>
+                        <div class="col-span-1 sm:col-span-2">
+                            <p class="text-sm text-gray-500">Alamat</p>
+                            <p id="detail-customer-address" class="font-semibold"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold mb-4">Daftar Tagihan</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left responsive-table">
+                            <thead>
+                                <tr class="border-b bg-gray-50">
+                                    <th class="p-3">Periode Layanan</th>
+                                    <th class="p-3">Jumlah</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoice-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+                 <div class="text-center mt-6">
+                    <button id="change-id-btn" class="text-indigo-600 hover:underline">Ganti ID Pelanggan</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 text-white py-3 px-6 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <p id="toast-message"></p>
+    </div>
+
+    <!-- Modal Pembayaran Manual -->
+    <div id="payment-modal" class="fixed inset-0 z-50 items-center justify-center hidden bg-black bg-opacity-50">
+        <div class="bg-white rounded-lg shadow-lg p-6 md:p-8 w-11/12 max-w-md">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-xl font-bold">Instruksi Pembayaran</h3>
+                <button id="btn-close-payment-modal" class="text-2xl leading-none text-gray-500 hover:text-gray-800">&times;</button>
+            </div>
+            
+            <div class="space-y-4">
+                <p class="text-gray-700">Silakan lakukan transfer sejumlah:</p>
+                <p id="modal-invoice-amount" class="text-3xl font-bold text-center text-indigo-600 bg-indigo-50 py-3 rounded-lg"></p>
+                <p class="text-gray-700">Ke salah satu rekening berikut:</p>
+                
+                <div class="border rounded-lg p-3">
+                    <p class="font-semibold">Bank BCA</p>
+                    <p class="text-gray-600">No. Rekening: <span class="font-mono">1234567890</span></p>
+                    <p class="text-gray-600">Atas Nama: PT JagaNetwork Indonesia</p>
+                </div>
+
+                <div class="border rounded-lg p-3">
+                    <p class="font-semibold">Bank Mandiri</p>
+                    <p class="text-gray-600">No. Rekening: <span class="font-mono">0987654321</span></p>
+                    <p class="text-gray-600">Atas Nama: PT JagaNetwork Indonesia</p>
+                </div>
+
+                <p class="text-sm text-yellow-700 bg-yellow-50 p-3 rounded-lg">
+                    <i data-lucide="alert-triangle" class="inline w-4 h-4 mr-1"></i>
+                    Penting: Setelah melakukan transfer, klik tombol di bawah ini agar kami dapat segera memverifikasi pembayaran Anda.
+                </p>
+            </div>
+
+            <div class="flex justify-end gap-4 mt-6">
+                 <button type="button" id="btn-confirm-payment" class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-semibold flex items-center justify-center">
+                    <i data-lucide="check-circle" class="w-5 h-5 mr-2"></i>
+                    Saya Sudah Transfer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, doc, updateDoc, onSnapshot, 
+            collection, query, where, getDocs
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeuxfhsPRqd3NJTp0zUfnuZGJEKLBh3g0",
+            authDomain: "database-jaganetwork.firebaseapp.com",
+            projectId: "database-jaganetwork",
+            storageBucket: "database-jaganetwork.firebasestorage.app",
+            messagingSenderId: "912989992875",
+            appId: "1:912989992875:web:8c6cda77171889e1e644ee"
+        };
+    
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        const dataContainerPath = "jaganetwork_data/shared_workspace";
+        const getCollectionRef = (name) => collection(db, dataContainerPath, name);
+
+        let currentCustomer = null;
+        let unsubscribeInvoices = null;
+        let currentCustomerInvoices = [];
+        let invoiceToPay = null;
+
+        const inputSection = document.getElementById('customer-id-input-section');
+        const detailsSection = document.getElementById('invoice-details-section');
+        const checkBtn = document.getElementById('check-invoice-btn');
+        const customerIdInput = document.getElementById('customer-id-input');
+        const errorMsg = document.getElementById('error-message');
+        const changeIdBtn = document.getElementById('change-id-btn');
+        
+        const paymentModal = document.getElementById('payment-modal');
+        const btnClosePaymentModal = document.getElementById('btn-close-payment-modal');
+        const btnConfirmPayment = document.getElementById('btn-confirm-payment');
+
+        const showToast = (message, type = 'success') => {
+            const toast = document.getElementById('toast'), msg = document.getElementById('toast-message');
+            toast.className = 'fixed bottom-5 right-5 text-white py-3 px-6 rounded-lg shadow-lg transform transition-all duration-300 z-50';
+            const typeClasses = { error: 'bg-red-600', info: 'bg-blue-600' };
+            toast.classList.add(typeClasses[type] || 'bg-green-600');
+            msg.textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+        }
+
+        const formatRupiah = (angka) => !angka ? '-' : new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+        
+        const getBillingPeriodText = (invoice) => {
+            const endDate = new Date(invoice.periode + 'T00:00:00');
+            let startDate;
+            if (invoice.isProrated && currentCustomer?.joinDate) {
+                 startDate = new Date(currentCustomer.joinDate + 'T00:00:00');
+            } else {
+                 startDate = new Date(endDate.getFullYear(), endDate.getMonth() - 1, 8);
+            }
+            const options = { day: 'numeric', month: 'short', year: 'numeric' };
+            return `${startDate.toLocaleDateString('id-ID', options)} - ${endDate.toLocaleDateString('id-ID', options)}`;
+        }
+
+        const renderInvoices = (invoices) => {
+            const tbody = document.getElementById('invoice-table-body');
+            if (!invoices.length) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-500">Selamat, tidak ada tagihan yang perlu dibayar saat ini.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = invoices
+                .sort((a,b) => b.periode.localeCompare(a.periode))
+                .map(inv => {
+                    const actionBtn = `<button class="btn-pay-invoice bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm w-full" data-id="${inv.id}">Bayar Sekarang</button>`;
+                    return `<tr>
+                        <td data-label="Periode Layanan">${getBillingPeriodText(inv)}</td>
+                        <td data-label="Jumlah">${formatRupiah(inv.jumlah)}</td>
+                        <td data-label="Status"><span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">${inv.status}</span></td>
+                        <td data-label="Aksi">${actionBtn}</td>
+                    </tr>`;
+                }).join('');
+            lucide.createIcons();
+        };
+        
+        const openPaymentModal = (invoice) => {
+            invoiceToPay = invoice;
+            document.getElementById('modal-invoice-amount').textContent = formatRupiah(invoice.jumlah);
+            paymentModal.style.display = 'flex';
+        };
+
+        const closePaymentModal = () => {
+            paymentModal.style.display = 'none';
+            invoiceToPay = null;
+        };
+
+        const checkCustomerAndLoadInvoices = async () => {
+            const customerId = customerIdInput.value.trim();
+            if (customerId.length !== 5) {
+                errorMsg.textContent = 'ID Pelanggan harus 5 digit angka.'; return;
+            }
+            errorMsg.textContent = '';
+            checkBtn.disabled = true;
+            checkBtn.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Mencari...`;
+
+            try {
+                const q = query(getCollectionRef('customers'), where("customerId", "==", customerId));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    errorMsg.textContent = 'ID Pelanggan tidak ditemukan.';
+                    currentCustomer = null;
+                } else {
+                    const doc = querySnapshot.docs[0];
+                    currentCustomer = { id: doc.id, ...doc.data() };
+                    document.getElementById('detail-customer-id').textContent = currentCustomer.customerId;
+                    document.getElementById('detail-customer-name').textContent = currentCustomer.nama;
+                    document.getElementById('detail-customer-address').textContent = currentCustomer.alamat;
+                    inputSection.classList.add('hidden');
+                    detailsSection.classList.remove('hidden');
+
+                    const invoiceQuery = query(getCollectionRef('invoices'), where("pelangganId", "==", currentCustomer.id), where("status", "==", "belum lunas"));
+                    if(unsubscribeInvoices) unsubscribeInvoices();
+                    unsubscribeInvoices = onSnapshot(invoiceQuery, (snapshot) => {
+                        currentCustomerInvoices = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        renderInvoices(currentCustomerInvoices);
+                    });
+                }
+            } catch (err) {
+                console.error("Error checking customer:", err);
+                errorMsg.textContent = 'Terjadi kesalahan saat mencari data.';
+            } finally {
+                checkBtn.disabled = false;
+                checkBtn.innerHTML = `<i data-lucide="search" class="w-5 h-5 mr-2"></i> Cek Tagihan`;
+                lucide.createIcons();
+            }
+        };
+        
+        const confirmPayment = async (invoiceId) => {
+            try {
+                const invoiceRef = doc(db, dataContainerPath, 'invoices', invoiceId);
+                // Status diubah menjadi 'menunggu konfirmasi' bukan 'lunas'
+                await updateDoc(invoiceRef, {
+                    status: 'menunggu konfirmasi'
+                });
+                showToast(`Terima kasih! Pembayaran Anda akan segera kami verifikasi.`, 'info');
+            } catch (error) {
+                console.error("Error updating invoice status:", error);
+                showToast('Gagal mengirim konfirmasi.', 'error');
+            }
+        };
+
+        // Event Listeners
+        checkBtn.addEventListener('click', checkCustomerAndLoadInvoices);
+        customerIdInput.addEventListener('keyup', (e) => {
+             if (e.key === 'Enter') checkCustomerAndLoadInvoices();
+        });
+        
+        changeIdBtn.addEventListener('click', () => {
+            if(unsubscribeInvoices) unsubscribeInvoices();
+            currentCustomer = null;
+            currentCustomerInvoices = [];
+            customerIdInput.value = '';
+            detailsSection.classList.add('hidden');
+            inputSection.classList.remove('hidden');
+            document.getElementById('invoice-table-body').innerHTML = '';
+            errorMsg.textContent = '';
+        });
+
+        document.getElementById('invoice-table-body').addEventListener('click', (e) => {
+            const payButton = e.target.closest('.btn-pay-invoice');
+            if (payButton) {
+                const invoiceId = payButton.dataset.id;
+                const invoice = currentCustomerInvoices.find(inv => inv.id === invoiceId);
+                if (invoice) {
+                    openPaymentModal(invoice);
+                }
+            }
+        });
+
+        btnClosePaymentModal.addEventListener('click', closePaymentModal);
+        
+        btnConfirmPayment.addEventListener('click', () => {
+             if (invoiceToPay) {
+                confirmPayment(invoiceToPay.id);
+                closePaymentModal();
+            }
+        });
+        
+        // Initialize
+        lucide.createIcons();
+        signInAnonymously(auth).catch((error) => {
+            console.error("Anonymous sign-in failed:", error);
+            if (error.code === 'auth/admin-restricted-operation') {
+                errorMsg.innerHTML = '<strong>Error Konfigurasi:</strong> Login anonim harus diaktifkan di Firebase Console.';
+                checkBtn.disabled = true;
+                customerIdInput.disabled = true;
+            } else {
+                errorMsg.textContent = "Tidak dapat terhubung ke server.";
+            }
+        });
+    </script>
+</body>
+</html>
+
