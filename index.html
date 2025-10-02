@@ -100,8 +100,8 @@
     </div>
 
     <!-- Modal Pembayaran Manual -->
-    <div id="payment-modal" class="fixed inset-0 z-50 items-center justify-center hidden bg-black bg-opacity-50">
-        <div class="bg-white rounded-lg shadow-lg p-6 md:p-8 w-11/12 max-w-md">
+    <div id="payment-modal" class="fixed inset-0 z-50 items-center justify-center hidden bg-black bg-opacity-50 overflow-y-auto p-4">
+        <div class="bg-white rounded-lg shadow-lg p-6 md:p-8 w-11/12 max-w-md my-8">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
                 <h3 class="text-xl font-bold">Instruksi Pembayaran</h3>
                 <button id="btn-close-payment-modal" class="text-2xl leading-none text-gray-500 hover:text-gray-800">&times;</button>
@@ -110,28 +110,64 @@
             <div class="space-y-4">
                 <p class="text-gray-700">Silakan lakukan transfer sejumlah:</p>
                 <p id="modal-invoice-amount" class="text-3xl font-bold text-center text-indigo-600 bg-indigo-50 py-3 rounded-lg"></p>
-                <p class="text-gray-700">Ke salah satu rekening berikut:</p>
                 
-                <div class="border rounded-lg p-3">
-                    <p class="font-semibold">Bank BCA</p>
-                    <p class="text-gray-600">No. Rekening: <span class="font-mono">1234567890</span></p>
-                    <p class="text-gray-600">Atas Nama: PT JagaNetwork Indonesia</p>
+                <div>
+                    <p class="text-gray-700 font-semibold">Transfer Bank:</p>
+                    <div class="border rounded-lg p-3 mt-1 space-y-2">
+                        <div>
+                            <p class="font-semibold">Bank Mandiri</p>
+                            <div class="flex justify-between items-center">
+                                <p class="text-gray-600">No. Rek: <span class="font-mono">1180010207073</span></p>
+                                <button class="btn-copy p-1 text-gray-500 hover:text-indigo-600" data-copy="1180010207073" aria-label="Salin nomor rekening Mandiri">
+                                    <i data-lucide="copy" class="w-4 h-4 pointer-events-none"></i>
+                                </button>
+                            </div>
+                            <p class="text-gray-600 text-sm">a/n ROHMAH</p>
+                        </div>
+                        <div class="border-t"></div>
+                        <div>
+                            <p class="font-semibold">SeaBank</p>
+                             <div class="flex justify-between items-center">
+                                <p class="text-gray-600">No. Rek: <span class="font-mono">901481081310</span></p>
+                                <button class="btn-copy p-1 text-gray-500 hover:text-indigo-600" data-copy="901481081310" aria-label="Salin nomor rekening SeaBank">
+                                    <i data-lucide="copy" class="w-4 h-4 pointer-events-none"></i>
+                                </button>
+                            </div>
+                            <p class="text-gray-600 text-sm">a/n Muhamm Azwan W. M.</p>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="border rounded-lg p-3">
-                    <p class="font-semibold">Bank Mandiri</p>
-                    <p class="text-gray-600">No. Rekening: <span class="font-mono">0987654321</span></p>
-                    <p class="text-gray-600">Atas Nama: PT JagaNetwork Indonesia</p>
+                <div>
+                    <p class="text-gray-700 font-semibold">E-Wallet:</p>
+                    <div class="border rounded-lg p-3 mt-1 space-y-2">
+                         <div>
+                            <p class="font-semibold">DANA / Gopay / ShopeePay</p>
+                             <div class="flex justify-between items-center">
+                                <p class="text-gray-600">No: <span class="font-mono">089503863887</span></p>
+                                <button class="btn-copy p-1 text-gray-500 hover:text-indigo-600" data-copy="089503863887" aria-label="Salin nomor E-Wallet">
+                                    <i data-lucide="copy" class="w-4 h-4 pointer-events-none"></i>
+                                </button>
+                            </div>
+                            <p class="text-gray-600 text-sm">a/n Muhammad Azwan W. M.</p>
+                        </div>
+                    </div>
                 </div>
 
-                <p class="text-sm text-yellow-700 bg-yellow-50 p-3 rounded-lg">
+                <div class="mt-4">
+                    <label for="payment-proof-input" class="block text-sm font-medium text-gray-700 mb-1">Upload Bukti Pembayaran (Wajib)</label>
+                    <input type="file" id="payment-proof-input" accept="image/png, image/jpeg, image/jpg" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                    <img id="proof-preview" src="#" alt="Preview Bukti Bayar" class="mt-2 rounded-lg max-h-40 hidden mx-auto"/>
+                </div>
+
+                <p class="text-sm text-yellow-700 bg-yellow-50 p-3 rounded-lg mt-4">
                     <i data-lucide="alert-triangle" class="inline w-4 h-4 mr-1"></i>
-                    Penting: Setelah melakukan transfer, klik tombol di bawah ini agar kami dapat segera memverifikasi pembayaran Anda.
+                    Penting: Setelah melakukan transfer dan mengunggah bukti, klik tombol di bawah ini.
                 </p>
             </div>
 
             <div class="flex justify-end gap-4 mt-6">
-                 <button type="button" id="btn-confirm-payment" class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-semibold flex items-center justify-center">
+                 <button type="button" id="btn-confirm-payment" class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-semibold flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
                     <i data-lucide="check-circle" class="w-5 h-5 mr-2"></i>
                     Saya Sudah Transfer
                 </button>
@@ -146,12 +182,15 @@
             getFirestore, doc, updateDoc, onSnapshot, 
             collection, query, where, getDocs
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { 
+            getStorage, ref, uploadBytes, getDownloadURL 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
     
         const firebaseConfig = {
             apiKey: "AIzaSyBeuxfhsPRqd3NJTp0zUfnuZGJEKLBh3g0",
             authDomain: "database-jaganetwork.firebaseapp.com",
             projectId: "database-jaganetwork",
-            storageBucket: "database-jaganetwork.firebasestorage.app",
+            storageBucket: "database-jaganetwork.appspot.com",
             messagingSenderId: "912989992875",
             appId: "1:912989992875:web:8c6cda77171889e1e644ee"
         };
@@ -159,6 +198,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+        const storage = getStorage(app);
         
         const dataContainerPath = "jaganetwork_data/shared_workspace";
         const getCollectionRef = (name) => collection(db, dataContainerPath, name);
@@ -178,6 +218,8 @@
         const paymentModal = document.getElementById('payment-modal');
         const btnClosePaymentModal = document.getElementById('btn-close-payment-modal');
         const btnConfirmPayment = document.getElementById('btn-confirm-payment');
+        const paymentProofInput = document.getElementById('payment-proof-input');
+        const proofPreview = document.getElementById('proof-preview');
 
         const showToast = (message, type = 'success') => {
             const toast = document.getElementById('toast'), msg = document.getElementById('toast-message');
@@ -188,6 +230,25 @@
             toast.classList.remove('translate-y-20', 'opacity-0');
             setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
         }
+
+        const copyToClipboard = (text) => {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed'; // Prevent scrolling to bottom of page in MS Edge.
+            textArea.style.top = '0';
+            textArea.style.left = '0';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast('Nomor berhasil disalin!');
+            } catch (err) {
+                console.error('Gagal menyalin teks: ', err);
+                showToast('Gagal menyalin nomor.', 'error');
+            }
+            document.body.removeChild(textArea);
+        };
 
         const formatRupiah = (angka) => !angka ? '-' : new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
         
@@ -205,11 +266,18 @@
 
         const renderInvoices = (invoices) => {
             const tbody = document.getElementById('invoice-table-body');
-            if (!invoices.length) {
+            const filteredInvoices = invoices.filter(inv => inv.status !== 'menunggu konfirmasi');
+            
+            if (!filteredInvoices.length) {
                 tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-500">Selamat, tidak ada tagihan yang perlu dibayar saat ini.</td></tr>`;
+                const pendingInvoices = invoices.filter(inv => inv.status === 'menunggu konfirmasi');
+                if (pendingInvoices.length > 0) {
+                     tbody.innerHTML += `<tr><td colspan="4" class="p-4 text-center text-blue-600 bg-blue-50">Anda memiliki ${pendingInvoices.length} tagihan yang sedang menunggu verifikasi.</td></tr>`;
+                }
                 return;
             }
-            tbody.innerHTML = invoices
+
+            tbody.innerHTML = filteredInvoices
                 .sort((a,b) => b.periode.localeCompare(a.periode))
                 .map(inv => {
                     const actionBtn = `<button class="btn-pay-invoice bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm w-full" data-id="${inv.id}">Bayar Sekarang</button>`;
@@ -220,13 +288,22 @@
                         <td data-label="Aksi">${actionBtn}</td>
                     </tr>`;
                 }).join('');
+             const pendingInvoices = invoices.filter(inv => inv.status === 'menunggu konfirmasi');
+             if (pendingInvoices.length > 0) {
+                tbody.innerHTML += `<tr><td colspan="4" class="p-4 text-center text-blue-600 bg-blue-50">Anda memiliki ${pendingInvoices.length} tagihan yang sedang menunggu verifikasi.</td></tr>`;
+             }
             lucide.createIcons();
         };
         
         const openPaymentModal = (invoice) => {
             invoiceToPay = invoice;
             document.getElementById('modal-invoice-amount').textContent = formatRupiah(invoice.jumlah);
+            paymentProofInput.value = '';
+            proofPreview.src = '';
+            proofPreview.classList.add('hidden');
+            btnConfirmPayment.disabled = true;
             paymentModal.style.display = 'flex';
+            lucide.createIcons();
         };
 
         const closePaymentModal = () => {
@@ -259,7 +336,7 @@
                     inputSection.classList.add('hidden');
                     detailsSection.classList.remove('hidden');
 
-                    const invoiceQuery = query(getCollectionRef('invoices'), where("pelangganId", "==", currentCustomer.id), where("status", "==", "belum lunas"));
+                    const invoiceQuery = query(getCollectionRef('invoices'), where("pelangganId", "==", currentCustomer.id), where("status", "in", ["belum lunas", "menunggu konfirmasi"]));
                     if(unsubscribeInvoices) unsubscribeInvoices();
                     unsubscribeInvoices = onSnapshot(invoiceQuery, (snapshot) => {
                         currentCustomerInvoices = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -276,17 +353,36 @@
             }
         };
         
-        const confirmPayment = async (invoiceId) => {
+        const handlePaymentConfirmation = async () => {
+            const file = paymentProofInput.files[0];
+            if (!invoiceToPay || !file) {
+                showToast('Silakan pilih file bukti pembayaran.', 'error');
+                return;
+            }
+
+            btnConfirmPayment.disabled = true;
+            btnConfirmPayment.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Mengunggah...`;
+            
             try {
-                const invoiceRef = doc(db, dataContainerPath, 'invoices', invoiceId);
-                // Status diubah menjadi 'menunggu konfirmasi' bukan 'lunas'
+                const storageRef = ref(storage, `payment-proofs/${invoiceToPay.id}/${Date.now()}_${file.name}`);
+                const snapshot = await uploadBytes(storageRef, file);
+                const downloadURL = await getDownloadURL(snapshot.ref);
+                
+                const invoiceRef = doc(db, dataContainerPath, 'invoices', invoiceToPay.id);
                 await updateDoc(invoiceRef, {
-                    status: 'menunggu konfirmasi'
+                    status: 'menunggu konfirmasi',
+                    proofOfPaymentURL: downloadURL
                 });
+
                 showToast(`Terima kasih! Pembayaran Anda akan segera kami verifikasi.`, 'info');
+                closePaymentModal();
             } catch (error) {
-                console.error("Error updating invoice status:", error);
-                showToast('Gagal mengirim konfirmasi.', 'error');
+                console.error("Payment confirmation failed:", error);
+                showToast('Gagal mengunggah bukti pembayaran.', 'error');
+            } finally {
+                btnConfirmPayment.disabled = false;
+                btnConfirmPayment.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5 mr-2"></i> Saya Sudah Transfer`;
+                lucide.createIcons();
             }
         };
 
@@ -318,14 +414,36 @@
             }
         });
 
-        btnClosePaymentModal.addEventListener('click', closePaymentModal);
-        
-        btnConfirmPayment.addEventListener('click', () => {
-             if (invoiceToPay) {
-                confirmPayment(invoiceToPay.id);
-                closePaymentModal();
+        paymentModal.addEventListener('click', (e) => {
+            const copyButton = e.target.closest('.btn-copy');
+            if (copyButton) {
+                const textToCopy = copyButton.dataset.copy;
+                if (textToCopy) {
+                    copyToClipboard(textToCopy);
+                }
             }
         });
+
+        btnClosePaymentModal.addEventListener('click', closePaymentModal);
+        
+        paymentProofInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                btnConfirmPayment.disabled = false;
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    proofPreview.src = event.target.result;
+                    proofPreview.classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            } else {
+                btnConfirmPayment.disabled = true;
+                proofPreview.classList.add('hidden');
+                proofPreview.src = '';
+            }
+        });
+        
+        btnConfirmPayment.addEventListener('click', handlePaymentConfirmation);
         
         // Initialize
         lucide.createIcons();
