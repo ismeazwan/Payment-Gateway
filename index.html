@@ -370,45 +370,50 @@
                     useWebWorker: true,
                 }
                 showToast('Mengompres gambar...', 'info');
+                btnConfirmPayment.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Mengompres...`;
                 const compressedFile = await imageCompression(file, options);
         
                 const storageRef = ref(storage, `payment-proofs/${invoiceToPay.id}/${Date.now()}_${compressedFile.name}`);
                 const uploadTask = uploadBytesResumable(storageRef, compressedFile);
         
-                uploadTask.on('state_changed', 
-                    (snapshot) => {
-                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        btnConfirmPayment.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Mengunggah (${Math.round(progress)}%)...`;
-                    }, 
-                    (error) => {
-                        console.error("Upload failed:", error);
-                        showToast('Gagal mengunggah bukti pembayaran.', 'error');
-                        btnConfirmPayment.disabled = false;
-                        btnConfirmPayment.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5 mr-2"></i> Saya Sudah Transfer`;
-                        lucide.createIcons();
-                    }, 
-                    () => {
-                        getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-                            const invoiceRef = doc(db, dataContainerPath, 'invoices', invoiceToPay.id);
-                            await updateDoc(invoiceRef, {
-                                status: 'menunggu konfirmasi',
-                                proofOfPaymentURL: downloadURL
-                            });
-                            showToast(`Terima kasih! Pembayaran Anda akan segera kami verifikasi.`, 'info');
-                            closePaymentModal();
-                        }).catch((err) => {
-                            console.error("Get URL failed:", err);
-                            showToast('Gagal mendapatkan link file bukti bayar.', 'error');
-                        }).finally(() => {
-                           btnConfirmPayment.disabled = false;
-                           btnConfirmPayment.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5 mr-2"></i> Saya Sudah Transfer`;
-                           lucide.createIcons();
-                        });
-                    }
-                );
+                const timeoutPromise = new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error("Upload timed out")), 15000); // 15 detik timeout
+                });
+
+                const uploadPromise = new Promise((resolve, reject) => {
+                    uploadTask.on('state_changed', 
+                        (snapshot) => {
+                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                            if (progress > 0) {
+                                btnConfirmPayment.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Mengunggah (${Math.round(progress)}%)...`;
+                            } else {
+                                btnConfirmPayment.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Menyambungkan...`;
+                            }
+                        }, 
+                        (error) => reject(error),
+                        () => getDownloadURL(uploadTask.snapshot.ref).then(resolve).catch(reject)
+                    );
+                });
+
+                const downloadURL = await Promise.race([uploadPromise, timeoutPromise]);
+                
+                const invoiceRef = doc(db, dataContainerPath, 'invoices', invoiceToPay.id);
+                await updateDoc(invoiceRef, {
+                    status: 'menunggu konfirmasi',
+                    proofOfPaymentURL: downloadURL
+                });
+
+                showToast(`Terima kasih! Pembayaran Anda akan segera kami verifikasi.`, 'info');
+                closePaymentModal();
+
             } catch (error) {
-                console.error("Image compression or upload failed:", error);
-                showToast('Gagal memproses gambar.', 'error');
+                console.error("Payment confirmation failed:", error);
+                if (error.message === "Upload timed out") {
+                    showToast('Unggahan terlalu lama. Cek koneksi internet Anda dan coba lagi.', 'error');
+                } else {
+                    showToast('Gagal memproses pembayaran.', 'error');
+                }
+            } finally {
                 btnConfirmPayment.disabled = false;
                 btnConfirmPayment.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5 mr-2"></i> Saya Sudah Transfer`;
                 lucide.createIcons();
