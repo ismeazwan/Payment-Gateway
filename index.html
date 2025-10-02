@@ -69,6 +69,10 @@
                             <p class="text-sm text-gray-500">Alamat</p>
                             <p id="detail-customer-address" class="font-semibold"></p>
                         </div>
+                        <div class="col-span-1 sm:col-span-2">
+                            <p class="text-sm text-gray-500">Paket Layanan</p>
+                            <p id="detail-customer-package" class="font-semibold"></p>
+                        </div>
                     </div>
                 </div>
 
@@ -209,6 +213,7 @@
         let currentCustomer = null;
         let unsubscribeInvoices = null;
         let currentCustomerInvoices = [];
+        let allPackages = [];
         let invoiceToPay = null;
 
         const inputSection = document.getElementById('customer-id-input-section');
@@ -270,8 +275,6 @@
 
         const renderInvoices = (allInvoices) => {
             const tbody = document.getElementById('invoice-table-body');
-            
-            // Filter out lunas invoices before rendering
             const invoicesToDisplay = allInvoices.filter(inv => inv.status !== 'lunas');
             
             if (!invoicesToDisplay.length) {
@@ -321,6 +324,15 @@
             invoiceToPay = null;
         };
 
+        const loadPackages = async () => {
+            try {
+                const querySnapshot = await getDocs(getCollectionRef('packages'));
+                allPackages = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch (err) {
+                console.error("Error loading packages:", err);
+            }
+        };
+
         const checkCustomerAndLoadInvoices = async () => {
             const customerId = customerIdInput.value.trim();
             if (customerId.length !== 5) {
@@ -340,9 +352,15 @@
                 } else {
                     const doc = querySnapshot.docs[0];
                     currentCustomer = { id: doc.id, ...doc.data() };
+
+                    const pkg = allPackages.find(p => p.id === currentCustomer.paketId) || { nama: 'N/A', kecepatan: '' };
+                    
                     document.getElementById('detail-customer-id').textContent = currentCustomer.customerId;
                     document.getElementById('detail-customer-name').textContent = currentCustomer.nama;
                     document.getElementById('detail-customer-address').textContent = currentCustomer.alamat;
+                    document.getElementById('detail-customer-package').textContent = pkg ? `${pkg.nama} (${pkg.kecepatan})` : 'Tidak Terdaftar';
+
+
                     inputSection.classList.add('hidden');
                     detailsSection.classList.remove('hidden');
 
@@ -354,7 +372,7 @@
                         if (currentCustomerInvoices.length > 0) {
                             newInvoices.forEach(newInvoice => {
                                 const oldInvoice = currentCustomerInvoices.find(old => old.id === newInvoice.id);
-                                if (oldInvoice && oldInvoice.status === 'menunggu konfirmasi' && newInvoice.status === 'lunas') {
+                                if (oldInvoice && oldInvoice.status !== 'lunas' && newInvoice.status === 'lunas') {
                                     successModal.style.display = 'flex';
                                     lucide.createIcons();
                                 }
@@ -417,6 +435,7 @@ Berikut bukti transfernya. Terima kasih.`;
             if(unsubscribeInvoices) unsubscribeInvoices();
             currentCustomer = null;
             currentCustomerInvoices = [];
+            allPackages = [];
             customerIdInput.value = '';
             detailsSection.classList.add('hidden');
             inputSection.classList.remove('hidden');
@@ -455,7 +474,9 @@ Berikut bukti transfernya. Terima kasih.`;
 
         // Initialize
         lucide.createIcons();
-        signInAnonymously(auth).catch((error) => {
+        signInAnonymously(auth).then(() => {
+            loadPackages(); // Muat data paket setelah berhasil login
+        }).catch((error) => {
             console.error("Anonymous sign-in failed:", error);
             if (error.code === 'auth/admin-restricted-operation') {
                 errorMsg.innerHTML = '<strong>Error Konfigurasi:</strong> Login anonim harus diaktifkan di Firebase Console.';
