@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JagaNetwork - Cek & Bayar Tagihan</title>
+    <title>JagaNetwork - Portal Pelanggan</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -33,57 +33,68 @@
 </head>
 <body class="bg-gray-50 text-gray-800">
 
-    <div class="container mx-auto p-4 sm:p-6 md:p-8 max-w-2xl">
+    <div class="container mx-auto p-4 sm:p-6 md:p-8 max-w-4xl">
         <header class="text-center mb-8">
             <img src="logoweb.png" alt="Logo JagaNetwork" class="h-16 mx-auto mb-4">
-            <p class="text-gray-500 mt-2">Portal Pembayaran Tagihan Pelanggan</p>
+            <p class="text-gray-500 mt-2">Portal Pelanggan JagaNetwork</p>
         </header>
 
         <main>
             <!-- Input ID Section -->
-            <div id="customer-id-input-section" class="bg-white p-6 rounded-lg shadow-md">
-                <h2 class="text-xl font-semibold mb-4">Cek Tagihan Anda</h2>
-                <p class="text-gray-600 mb-4">Silakan masukkan ID Pelanggan Anda untuk melihat detail tagihan.</p>
+            <div id="customer-id-input-section" class="bg-white p-6 rounded-lg shadow-md max-w-2xl mx-auto">
+                <h2 class="text-xl font-semibold mb-4">Selamat Datang</h2>
+                <p class="text-gray-600 mb-4">Silakan masukkan ID Pelanggan Anda untuk mengakses portal.</p>
                 <div class="flex flex-col sm:flex-row gap-2">
                     <input type="text" id="customer-id-input" placeholder="Contoh: 12345" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition" maxlength="5">
                     <button id="check-invoice-btn" class="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300 font-medium flex items-center justify-center">
-                        <i data-lucide="search" class="w-5 h-5 mr-2"></i>Cek Tagihan
+                        <i data-lucide="log-in" class="w-5 h-5 mr-2"></i>Masuk
                     </button>
                 </div>
                 <p id="error-message" class="text-red-500 text-sm mt-2 h-4"></p>
             </div>
 
-            <!-- Invoice Details Section -->
+            <!-- Main Portal Section -->
             <div id="invoice-details-section" class="hidden mt-8">
                 <div class="bg-white p-6 rounded-lg shadow-md mb-6">
-                    <h3 class="text-lg font-semibold border-b pb-3 mb-4">Detail Pelanggan</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center border-b pb-4 mb-4">
                         <div>
-                            <p class="text-sm text-gray-500">ID Pelanggan</p>
-                            <p id="detail-customer-id" class="font-semibold"></p>
+                            <h3 class="text-lg font-semibold">Selamat Datang, <span id="detail-customer-name"></span>!</h3>
+                            <p class="text-sm text-gray-500">ID Pelanggan: <span id="detail-customer-id" class="font-medium"></span></p>
                         </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Nama</p>
-                            <p id="detail-customer-name" class="font-semibold"></p>
-                        </div>
-                        <div class="col-span-1 sm:col-span-2">
-                            <p class="text-sm text-gray-500">Alamat</p>
+                        <button id="change-id-btn" class="text-sm text-blue-600 hover:underline mt-2 sm:mt-0">Keluar</button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-6">
+                         <div>
+                            <p class="text-gray-500">Alamat</p>
                             <p id="detail-customer-address" class="font-semibold"></p>
                         </div>
-                        <div class="col-span-1 sm:col-span-2">
-                            <p class="text-sm text-gray-500">Paket Layanan</p>
+                        <div>
+                            <p class="text-gray-500">Paket Layanan Saat Ini</p>
                             <p id="detail-customer-package" class="font-semibold"></p>
                         </div>
                     </div>
+
+                    <!-- Action Buttons -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button id="btn-open-report-modal" class="w-full bg-red-500 text-white px-4 py-3 rounded-lg hover:bg-red-600 font-semibold flex items-center justify-center text-center">
+                            <i data-lucide="alert-triangle" class="w-5 h-5 mr-2"></i>
+                            <span>Lapor Gangguan</span>
+                        </button>
+                        <button id="btn-open-change-package-modal" class="w-full bg-gray-600 text-white px-4 py-3 rounded-lg hover:bg-gray-700 font-semibold flex items-center justify-center text-center">
+                            <i data-lucide="arrow-right-left" class="w-5 h-5 mr-2"></i>
+                            <span>Ubah Paket Langganan</span>
+                        </button>
+                    </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="bg-white p-6 rounded-lg shadow-md mb-6">
                     <h3 class="text-lg font-semibold mb-4">Daftar Tagihan</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left responsive-table">
                             <thead>
                                 <tr class="border-b bg-gray-50">
-                                    <th class="p-3">Periode Layanan</th>
+                                    <th class="p-3">Periode</th>
                                     <th class="p-3">Jumlah</th>
                                     <th class="p-3">Status</th>
                                     <th class="p-3 text-center">Aksi</th>
@@ -93,9 +104,23 @@
                         </table>
                     </div>
                 </div>
-                 <div class="text-center mt-6">
-                    <button id="change-id-btn" class="text-blue-600 hover:underline">Ganti ID Pelanggan</button>
+                
+                <div id="ticket-history-section" class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold mb-4">Riwayat Laporan Gangguan</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left responsive-table">
+                            <thead>
+                                <tr class="border-b bg-gray-50">
+                                    <th class="p-3">Tanggal Lapor</th>
+                                    <th class="p-3">Jenis Gangguan</th>
+                                    <th class="p-3">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ticket-table-body"></tbody>
+                        </table>
+                    </div>
                 </div>
+
             </div>
         </main>
     </div>
@@ -104,6 +129,7 @@
         <p id="toast-message"></p>
     </div>
 
+    <!-- Modals -->
     <!-- Payment Modal -->
     <div id="payment-modal" class="fixed inset-0 z-50 items-center justify-center hidden bg-black bg-opacity-50 overflow-y-auto p-4">
         <div class="bg-white rounded-lg shadow-lg p-6 md:p-8 w-11/12 max-w-md my-8">
@@ -111,11 +137,9 @@
                 <h3 class="text-xl font-bold">Instruksi Pembayaran</h3>
                 <button id="btn-close-payment-modal" class="text-2xl leading-none text-gray-500 hover:text-gray-800">&times;</button>
             </div>
-            
             <div class="space-y-4">
                 <p class="text-gray-700">Silakan lakukan transfer sejumlah:</p>
                 <p id="modal-invoice-amount" class="text-3xl font-bold text-center text-blue-600 bg-blue-50 py-3 rounded-lg"></p>
-                
                 <div>
                     <p class="text-gray-700 font-semibold">Transfer Bank:</p>
                     <div class="border rounded-lg p-3 mt-1 space-y-2">
@@ -123,15 +147,12 @@
                             <p class="font-semibold">BCA</p>
                             <div class="flex justify-between items-center">
                                 <p class="text-gray-600">No. Rek: <span class="font-mono">1234567890</span></p>
-                                <button class="btn-copy p-1 text-gray-500 hover:text-blue-600" data-copy="1234567890" aria-label="Salin nomor rekening BCA">
-                                    <i data-lucide="copy" class="w-4 h-4 pointer-events-none"></i>
-                                </button>
+                                <button class="btn-copy p-1 text-gray-500 hover:text-blue-600" data-copy="1234567890" aria-label="Salin nomor rekening BCA"><i data-lucide="copy" class="w-4 h-4 pointer-events-none"></i></button>
                             </div>
                             <p class="text-gray-600 text-sm">a/n Jaga Network Indonesia</p>
                         </div>
                     </div>
                 </div>
-
                 <div>
                     <p class="text-gray-700 font-semibold">E-Wallet:</p>
                     <div class="border rounded-lg p-3 mt-1 space-y-2">
@@ -139,32 +160,83 @@
                             <p class="font-semibold">DANA / Gopay / ShopeePay</p>
                              <div class="flex justify-between items-center">
                                 <p class="text-gray-600">No: <span class="font-mono">088973378384</span></p>
-                                <button class="btn-copy p-1 text-gray-500 hover:text-blue-600" data-copy="088973378384" aria-label="Salin nomor E-Wallet">
-                                    <i data-lucide="copy" class="w-4 h-4 pointer-events-none"></i>
-                                </button>
+                                <button class="btn-copy p-1 text-gray-500 hover:text-blue-600" data-copy="088973378384" aria-label="Salin nomor E-Wallet"><i data-lucide="copy" class="w-4 h-4 pointer-events-none"></i></button>
                             </div>
                             <p class="text-gray-600 text-sm">a/n Jaga Network</p>
                         </div>
                     </div>
                 </div>
-                
-                <p class="text-sm text-green-700 bg-green-50 p-3 rounded-lg mt-6">
-                    <i data-lucide="info" class="inline w-4 h-4 mr-1"></i>
-                    Setelah transfer, klik tombol di bawah ini untuk mengirim bukti pembayaran langsung ke Admin via WhatsApp.
-                </p>
+                <p class="text-sm text-green-700 bg-green-50 p-3 rounded-lg mt-6"><i data-lucide="info" class="inline w-4 h-4 mr-1"></i>Setelah transfer, klik tombol di bawah ini untuk mengirim bukti pembayaran langsung ke Admin via WhatsApp.</p>
             </div>
-
             <div class="grid grid-cols-2 gap-4 mt-6">
-                 <button type="button" id="btn-cancel-payment" class="w-full bg-gray-200 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-300 font-semibold">
-                    Batal
-                </button>
-                 <button type="button" id="btn-confirm-payment-wa" class="w-full bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 font-semibold flex items-center justify-center text-center">
-                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M16.75 13.96c.25.13.41.2.46.3.08.11.1.21.12.31.02.1-.02.21-.06.31s-.13.18-.21.23-.2.1-.28.13c-.08.03-.17.03-.25.03-.1 0-.19-.02-.28-.05-.1-.03-.2-.06-.3-.1s-.2-.1-.3-.15c-.28-.16-.54-.37-.8-.63-.26-.26-.5-.54-.73-.86s-.43-.67-.6-.98c-.18-.31-.31-.59-.4-.83-.09-.24-.13-.45-.13-.62s.01-.3.04-.42.08-.23.15-.31.15-.15.25-.2c.1-.05.2-.08.31-.08.11 0 .2.01.29.04s.16.06.22.1c.06.04.12.08.18.13s.11.1.15.16c.04.06.06.11.08.15.02.04.03.08.03.11s0 .09-.01.15l-.01.06-.27.99c-.06.22-.12.4-.2.53s-.16.23-.26.3c-.1.07-.2.1-.3.1s-.19-.02-.28-.07c-.09-.04-.18-.1-.26-.18s-.15-.15-.22-.24-.13-.18-.19-.28c-.06-.1-.13-.2-.2-.31-.07-.11-.13-.21-.19-.31-.22-.35-.33-.65-.33-.89 0-.25.06-.5.18-.73s.28-.43.48-.59.43-.28.7-.38c.27-.1.55-.14.85-.14.38 0 .73.07 1.04.2s.58.31.81.54.41.48.53.75.18.52.18.74c0 .08-.01.15-.03.23s-.04.15-.08.21-.08.14-.13.2zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.79 0 3.48-.46 4.95-1.28l3.79 1.28-1.28-3.79c.82-1.47 1.28-3.16 1.28-4.95C22 6.48 17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
-                    <span>Kirim Bukti</span>
-                </button>
+                 <button type="button" id="btn-cancel-payment" class="w-full bg-gray-200 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-300 font-semibold">Batal</button>
+                 <button type="button" id="btn-confirm-payment-wa" class="w-full bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 font-semibold flex items-center justify-center text-center"><svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M16.75 13.96c.25.13.41.2.46.3.08.11.1.21.12.31.02.1-.02.21-.06.31s-.13.18-.21.23-.2.1-.28.13c-.08.03-.17.03-.25.03-.1 0-.19-.02-.28-.05-.1-.03-.2-.06-.3-.1s-.2-.1-.3-.15c-.28-.16-.54-.37-.8-.63-.26-.26-.5-.54-.73-.86s-.43-.67-.6-.98c-.18-.31-.31-.59-.4-.83-.09-.24-.13-.45-.13-.62s.01-.3.04-.42.08-.23.15-.31.15-.15.25-.2c.1-.05.2-.08.31-.08.11 0 .2.01.29.04s.16.06.22.1c.06.04.12.08.18.13s.11.1.15.16c.04.06.06.11.08.15.02.04.03.08.03.11s0 .09-.01.15l-.01.06-.27.99c-.06.22-.12.4-.2.53s-.16.23-.26.3c-.1.07-.2.1-.3.1s-.19-.02-.28-.07c-.09-.04-.18-.1-.26-.18s-.15-.15-.22-.24-.13-.18-.19-.28c-.06-.1-.13-.2-.2-.31-.07-.11-.13-.21-.19-.31-.22-.35-.33-.65-.33-.89 0-.25.06-.5.18-.73s.28-.43.48-.59.43-.28.7-.38c.27-.1.55-.14.85-.14.38 0 .73.07 1.04.2s.58.31.81.54.41.48.53.75.18.52.18.74c0 .08-.01.15-.03.23s-.04.15-.08.21-.08.14-.13.2zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.79 0 3.48-.46 4.95-1.28l3.79 1.28-1.28-3.79c.82-1.47 1.28-3.16 1.28-4.95C22 6.48 17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg><span>Kirim Bukti</span></button>
             </div>
         </div>
     </div>
+
+    <!-- Report Issue Modal -->
+    <div id="report-issue-modal" class="fixed inset-0 z-50 items-center justify-center hidden bg-black bg-opacity-50 overflow-y-auto p-4">
+        <div class="bg-white rounded-lg shadow-lg p-6 md:p-8 w-11/12 max-w-md my-8">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-xl font-bold">Form Laporan Gangguan</h3>
+                <button id="btn-close-report-modal" class="text-2xl leading-none text-gray-500 hover:text-gray-800">&times;</button>
+            </div>
+            <form id="report-issue-form">
+                <div class="space-y-4">
+                    <div>
+                        <label for="issue-type" class="block text-sm font-medium text-gray-700 mb-1">Jenis Gangguan</label>
+                        <select id="issue-type" name="issue-type" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition" required>
+                            <option value="">Pilih jenis gangguan...</option>
+                            <option value="Internet Mati Total">Internet Mati Total</option>
+                            <option value="Koneksi Lambat">Koneksi Lambat (Lemot)</option>
+                            <option value="Koneksi Putus-Nyambung">Koneksi Putus-Nyambung (Intermittent)</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="issue-description" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi Singkat</label>
+                        <textarea id="issue-description" name="issue-description" rows="3" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="Contoh: Lampu indikator di modem berwarna merah." required></textarea>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <button type="submit" class="w-full bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 font-semibold flex items-center justify-center text-center">
+                        <i data-lucide="send" class="w-5 h-5 mr-2"></i>Kirim Laporan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Change Package Modal -->
+    <div id="change-package-modal" class="fixed inset-0 z-50 items-center justify-center hidden bg-black bg-opacity-50 overflow-y-auto p-4">
+        <div class="bg-white rounded-lg shadow-lg p-6 md:p-8 w-11/12 max-w-md my-8">
+             <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-xl font-bold">Form Ubah Paket</h3>
+                <button id="btn-close-change-package-modal" class="text-2xl leading-none text-gray-500 hover:text-gray-800">&times;</button>
+            </div>
+            <form id="change-package-form">
+                 <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Paket Saat Ini</label>
+                        <p id="current-package-info" class="w-full p-3 border bg-gray-100 text-gray-700 rounded-lg"></p>
+                    </div>
+                    <div>
+                        <label for="new-package" class="block text-sm font-medium text-gray-700 mb-1">Pilih Paket Baru</label>
+                        <select id="new-package" name="new-package" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition" required>
+                           <option value="">Pilih paket baru...</option>
+                        </select>
+                    </div>
+                 </div>
+                 <div class="mt-6">
+                    <button type="submit" class="w-full bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 font-semibold flex items-center justify-center text-center">
+                        <i data-lucide="send" class="w-5 h-5 mr-2"></i>Ajukan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 
     <!-- Success Modal -->
     <div id="success-modal" class="fixed inset-0 z-50 items-center justify-center hidden bg-black bg-opacity-50">
@@ -172,8 +244,8 @@
             <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
                 <i data-lucide="check" class="h-8 w-8 text-green-600"></i>
             </div>
-            <h3 class="text-xl font-bold">Pembayaran Diterima!</h3>
-            <p class="text-gray-600 mt-2">Terima kasih, tagihan Anda telah lunas.</p>
+            <h3 id="success-modal-title" class="text-xl font-bold">Pembayaran Diterima!</h3>
+            <p id="success-modal-message" class="text-gray-600 mt-2">Terima kasih, tagihan Anda telah lunas.</p>
             <button id="btn-close-success-modal" class="mt-6 w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">OK</button>
         </div>
     </div>
@@ -185,7 +257,7 @@
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { 
             getFirestore, doc, updateDoc, onSnapshot, 
-            collection, query, where, getDocs
+            collection, query, where, getDocs, addDoc, serverTimestamp
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     
         // Firebase Configuration
@@ -210,6 +282,7 @@
         // Global state
         let currentCustomer = null;
         let unsubscribeInvoices = null;
+        let unsubscribeTickets = null;
         let currentCustomerInvoices = [];
         let allPackages = [];
         let invoiceToPay = null;
@@ -226,9 +299,21 @@
         const btnClosePaymentModal = document.getElementById('btn-close-payment-modal');
         const btnConfirmPaymentWa = document.getElementById('btn-confirm-payment-wa');
         const btnCancelPayment = document.getElementById('btn-cancel-payment');
+        
+        const reportIssueModal = document.getElementById('report-issue-modal');
+        const btnOpenReportModal = document.getElementById('btn-open-report-modal');
+        const btnCloseReportModal = document.getElementById('btn-close-report-modal');
+        const reportIssueForm = document.getElementById('report-issue-form');
+
+        const changePackageModal = document.getElementById('change-package-modal');
+        const btnOpenChangePackageModal = document.getElementById('btn-open-change-package-modal');
+        const btnCloseChangePackageModal = document.getElementById('btn-close-change-package-modal');
+        const changePackageForm = document.getElementById('change-package-form');
 
         const successModal = document.getElementById('success-modal');
         const btnCloseSuccessModal = document.getElementById('btn-close-success-modal');
+        
+        const formatRupiah = (angka) => !angka ? '-' : new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
         
         // Utility Functions
         const showToast = (message, type = 'success') => {
@@ -241,8 +326,14 @@
             setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
         }
 
+        const showSuccessModal = (title, message) => {
+            document.getElementById('success-modal-title').textContent = title;
+            document.getElementById('success-modal-message').textContent = message;
+            successModal.style.display = 'flex';
+            lucide.createIcons();
+        };
+
         const copyToClipboard = (text) => {
-            // Using document.execCommand for broader compatibility in iFrames
             const textArea = document.createElement('textarea');
             textArea.value = text;
             textArea.style.position = 'fixed';
@@ -253,13 +344,10 @@
                 document.execCommand('copy');
                 showToast('Nomor berhasil disalin!');
             } catch (err) {
-                console.error('Gagal menyalin teks: ', err);
                 showToast('Gagal menyalin nomor.', 'error');
             }
             document.body.removeChild(textArea);
         };
-
-        const formatRupiah = (angka) => !angka ? '-' : new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
         
         const getBillingPeriodText = (isoDate) => {
             const date = new Date(isoDate + 'T00:00:00');
@@ -269,38 +357,55 @@
         // Main Logic Functions
         const renderInvoices = (allInvoices) => {
             const tbody = document.getElementById('invoice-table-body');
-            const sortedInvoices = allInvoices.sort((a,b) => new Date(b.periode) - new Date(a.periode));
-
-            if (!sortedInvoices.length) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-500">Tidak ada data tagihan untuk pelanggan ini.</td></tr>`;
+            if (!allInvoices.length) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-500">Tidak ada data tagihan.</td></tr>`;
                 return;
             }
-            
+            const sortedInvoices = [...allInvoices].sort((a,b) => new Date(b.periode) - new Date(a.periode));
             tbody.innerHTML = sortedInvoices.map(inv => {
                 let statusText, statusClass, actionHtml;
-
                 switch(inv.status) {
                     case 'menunggu konfirmasi':
-                        statusText = 'Menunggu Verifikasi';
-                        statusClass = 'bg-blue-100 text-blue-800';
-                        actionHtml = `<span class="text-sm text-gray-500 italic">Diproses</span>`;
-                        break;
+                        statusText = 'Menunggu Verifikasi'; statusClass = 'bg-blue-100 text-blue-800';
+                        actionHtml = `<span class="text-sm text-gray-500 italic">Diproses</span>`; break;
                     case 'lunas':
-                        statusText = 'Lunas';
-                        statusClass = 'bg-green-100 text-green-800';
-                        actionHtml = `<span class="text-sm text-green-600 font-semibold">Selesai</span>`;
-                        break;
-                    default: // 'belum lunas'
-                        statusText = 'Belum Lunas';
-                        statusClass = 'bg-red-100 text-red-800';
+                        statusText = 'Lunas'; statusClass = 'bg-green-100 text-green-800';
+                        actionHtml = `<span class="text-sm text-green-600 font-semibold">Selesai</span>`; break;
+                    default: 
+                        statusText = 'Belum Lunas'; statusClass = 'bg-red-100 text-red-800';
                         actionHtml = `<button class="btn-pay-invoice bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm w-full" data-id="${inv.id}">Bayar Sekarang</button>`;
                 }
-
                 return `<tr>
-                    <td data-label="Periode Layanan">${getBillingPeriodText(inv.periode)}</td>
+                    <td data-label="Periode">${getBillingPeriodText(inv.periode)}</td>
                     <td data-label="Jumlah">${formatRupiah(inv.jumlah)}</td>
                     <td data-label="Status"><span class="px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">${statusText}</span></td>
                     <td data-label="Aksi" class="text-center">${actionHtml}</td>
+                </tr>`;
+            }).join('');
+        };
+        
+        const renderTickets = (tickets) => {
+            const tbody = document.getElementById('ticket-table-body');
+            if (!tickets.length) {
+                tbody.innerHTML = `<tr><td colspan="3" class="p-8 text-center text-gray-500">Belum ada riwayat laporan.</td></tr>`;
+                return;
+            }
+            const sortedTickets = [...tickets].sort((a,b) => b.timestamp.toMillis() - a.timestamp.toMillis());
+             tbody.innerHTML = sortedTickets.map(ticket => {
+                let statusText, statusClass;
+                switch(ticket.status) {
+                    case 'ditangani':
+                        statusText = 'Sedang Ditangani'; statusClass = 'bg-yellow-100 text-yellow-800'; break;
+                    case 'selesai':
+                        statusText = 'Selesai'; statusClass = 'bg-green-100 text-green-800'; break;
+                    default:
+                        statusText = 'Baru'; statusClass = 'bg-blue-100 text-blue-800';
+                }
+                const ticketDate = ticket.timestamp.toDate().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+                 return `<tr>
+                    <td data-label="Tanggal Lapor">${ticketDate}</td>
+                    <td data-label="Jenis Gangguan">${ticket.jenisGangguan}</td>
+                    <td data-label="Status"><span class="px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">${statusText}</span></td>
                 </tr>`;
             }).join('');
         };
@@ -312,25 +417,21 @@
             lucide.createIcons();
         };
 
-        const closePaymentModal = () => {
-            paymentModal.style.display = 'none';
-            invoiceToPay = null;
-        };
+        const closePaymentModal = () => { paymentModal.style.display = 'none'; invoiceToPay = null; };
+        const closeReportModal = () => { reportIssueModal.style.display = 'none'; reportIssueForm.reset(); };
+        const closeChangePackageModal = () => { changePackageModal.style.display = 'none'; changePackageForm.reset(); };
 
         const loadPackages = async () => {
             try {
-                const querySnapshot = await getDocs(getCollectionRef('packages'));
+                const q = query(getCollectionRef('packages'));
+                const querySnapshot = await getDocs(q);
                 allPackages = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            } catch (err) {
-                console.error("Error loading packages:", err);
-            }
+            } catch (err) { console.error("Error loading packages:", err); }
         };
 
-        const checkCustomerAndLoadInvoices = async () => {
+        const checkCustomerAndLoadData = async () => {
             const customerId = customerIdInput.value.trim();
-            if (!/^\d{5}$/.test(customerId)) {
-                errorMsg.textContent = 'ID Pelanggan harus 5 digit angka.'; return;
-            }
+            if (!/^\d{5}$/.test(customerId)) { errorMsg.textContent = 'ID Pelanggan harus 5 digit angka.'; return; }
             errorMsg.textContent = '';
             checkBtn.disabled = true;
             checkBtn.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Mencari...`;
@@ -355,24 +456,29 @@
                     inputSection.classList.add('hidden');
                     detailsSection.classList.remove('hidden');
 
+                    // Listen for invoices
                     const invoiceQuery = query(getCollectionRef('invoices'), where("pelangganId", "==", currentCustomer.id));
                     if(unsubscribeInvoices) unsubscribeInvoices();
                     unsubscribeInvoices = onSnapshot(invoiceQuery, (snapshot) => {
                         const newInvoices = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        
-                        // Check for status change to 'lunas' to show success modal
                         if (currentCustomerInvoices.length > 0) {
-                            newInvoices.forEach(newInvoice => {
-                                const oldInvoice = currentCustomerInvoices.find(old => old.id === newInvoice.id);
-                                if (oldInvoice && oldInvoice.status !== 'lunas' && newInvoice.status === 'lunas') {
-                                    successModal.style.display = 'flex';
-                                    lucide.createIcons();
+                            newInvoices.forEach(newInv => {
+                                const oldInv = currentCustomerInvoices.find(old => old.id === newInv.id);
+                                if (oldInv && oldInv.status !== 'lunas' && newInv.status === 'lunas') {
+                                    showSuccessModal('Pembayaran Diterima!', 'Terima kasih, tagihan Anda telah lunas.');
                                 }
                             });
                         }
-                        
                         currentCustomerInvoices = newInvoices;
                         renderInvoices(currentCustomerInvoices);
+                    });
+
+                    // Listen for tickets
+                    const ticketQuery = query(getCollectionRef('tickets'), where("pelangganId", "==", currentCustomer.id));
+                    if(unsubscribeTickets) unsubscribeTickets();
+                    unsubscribeTickets = onSnapshot(ticketQuery, (snapshot) => {
+                         const tickets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                         renderTickets(tickets);
                     });
                 }
             } catch (err) {
@@ -380,84 +486,131 @@
                 errorMsg.textContent = 'Terjadi kesalahan saat mencari data.';
             } finally {
                 checkBtn.disabled = false;
-                checkBtn.innerHTML = `<i data-lucide="search" class="w-5 h-5 mr-2"></i> Cek Tagihan`;
+                checkBtn.innerHTML = `<i data-lucide="log-in" class="w-5 h-5 mr-2"></i> Masuk`;
                 lucide.createIcons();
             }
         };
         
-        const handleWhatsAppRedirect = async () => {
-            if (!invoiceToPay || !currentCustomer) return;
-            
-            const adminWhatsappNumber = '6288973378384'; 
-
-            const message = `Halo Admin, saya ingin konfirmasi pembayaran untuk:
-
-Nama: *${currentCustomer.nama}*
-ID Pelanggan: *${currentCustomer.customerId}*
-Periode: *${getBillingPeriodText(invoiceToPay.periode)}*
-Jumlah: *${formatRupiah(invoiceToPay.jumlah)}*
-
-Berikut bukti transfernya. Terima kasih.`;
-
+        const sendWhatsAppMessage = (message) => {
+            const adminWhatsappNumber = '6288973378384';
             const whatsappUrl = `https://wa.me/${adminWhatsappNumber}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        };
+
+        const handlePaymentConfirmation = async () => {
+            if (!invoiceToPay || !currentCustomer) return;
+            const message = `Halo Admin, saya ingin konfirmasi pembayaran untuk:\n\nNama: *${currentCustomer.nama}*\nID Pelanggan: *${currentCustomer.customerId}*\nPeriode: *${getBillingPeriodText(invoiceToPay.periode)}*\nJumlah: *${formatRupiah(invoiceToPay.jumlah)}*\n\nBerikut bukti transfernya. Terima kasih.`;
             
             try {
-                // Update status to 'menunggu konfirmasi' in Firestore
                 const invoiceRef = doc(db, dataContainerPath, 'invoices', invoiceToPay.id);
                 await updateDoc(invoiceRef, { status: 'menunggu konfirmasi' });
-                
-                window.open(whatsappUrl, '_blank');
-                
+                sendWhatsAppMessage(message);
                 closePaymentModal();
                 showToast('Silakan kirim bukti pembayaran Anda di WhatsApp.', 'info');
             } catch (error) {
-                console.error("Failed to update status before redirect:", error);
                 showToast('Gagal memproses, silakan coba lagi.', 'error');
             }
         };
 
+        const handleReportIssueSubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const issueType = formData.get('issue-type');
+            const description = formData.get('issue-description');
+            
+            const message = `*LAPORAN GANGGUAN BARU*\n\nNama: *${currentCustomer.nama}*\nID Pelanggan: *${currentCustomer.customerId}*\nJenis Gangguan: *${issueType}*\nDeskripsi: ${description}\n\nMohon untuk segera ditindaklanjuti.`;
+
+            try {
+                await addDoc(getCollectionRef('tickets'), {
+                    pelangganId: currentCustomer.id,
+                    customerId: currentCustomer.customerId,
+                    nama: currentCustomer.nama,
+                    jenisGangguan: issueType,
+                    deskripsi: description,
+                    status: 'baru',
+                    timestamp: serverTimestamp()
+                });
+                sendWhatsAppMessage(message);
+                closeReportModal();
+                showToast('Laporan Anda berhasil dikirim!');
+            } catch (error) {
+                 showToast('Gagal mengirim laporan. Coba lagi.', 'error');
+            }
+        };
+
+        const handleChangePackageSubmit = (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const newPackageId = formData.get('new-package');
+            const newPackage = allPackages.find(p => p.id === newPackageId);
+            const currentPackage = allPackages.find(p => p.id === currentCustomer.paketId);
+            
+            const message = `*PERMINTAAN UBAH PAKET*\n\nNama: *${currentCustomer.nama}*\nID Pelanggan: *${currentCustomer.customerId}*\n\nPaket Saat Ini: *${currentPackage?.nama || 'N/A'}*\nIngin diubah menjadi: *${newPackage?.nama}*\n\nMohon untuk diproses. Terima kasih.`;
+            
+            sendWhatsAppMessage(message);
+            closeChangePackageModal();
+            showToast('Permintaan ubah paket telah dikirim!');
+        };
+        
         // Event Listeners
-        checkBtn.addEventListener('click', checkCustomerAndLoadInvoices);
-        customerIdInput.addEventListener('keyup', (e) => {
-             if (e.key === 'Enter') checkCustomerAndLoadInvoices();
-        });
+        checkBtn.addEventListener('click', checkCustomerAndLoadData);
+        customerIdInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') checkCustomerAndLoadData(); });
         
         changeIdBtn.addEventListener('click', () => {
             if(unsubscribeInvoices) unsubscribeInvoices();
+            if(unsubscribeTickets) unsubscribeTickets();
             currentCustomer = null;
-            currentCustomerInvoices = [];
             customerIdInput.value = '';
             detailsSection.classList.add('hidden');
             inputSection.classList.remove('hidden');
-            document.getElementById('invoice-table-body').innerHTML = '';
             errorMsg.textContent = '';
-            loadPackages(); // Reload packages in case it's needed
         });
 
         document.getElementById('invoice-table-body').addEventListener('click', (e) => {
             const payButton = e.target.closest('.btn-pay-invoice');
             if (payButton) {
-                const invoiceId = payButton.dataset.id;
-                const invoice = currentCustomerInvoices.find(inv => inv.id === invoiceId);
-                if (invoice) {
-                    openPaymentModal(invoice);
-                }
+                const invoice = currentCustomerInvoices.find(inv => inv.id === payButton.dataset.id);
+                if (invoice) openPaymentModal(invoice);
             }
         });
 
         paymentModal.addEventListener('click', (e) => {
             const copyButton = e.target.closest('.btn-copy');
-            if (copyButton) {
-                const textToCopy = copyButton.dataset.copy;
-                if (textToCopy) {
-                    copyToClipboard(textToCopy);
-                }
-            }
+            if (copyButton) copyToClipboard(copyButton.dataset.copy);
         });
 
         btnClosePaymentModal.addEventListener('click', closePaymentModal);
         btnCancelPayment.addEventListener('click', closePaymentModal);
-        btnConfirmPaymentWa.addEventListener('click', handleWhatsAppRedirect);
+        btnConfirmPaymentWa.addEventListener('click', handlePaymentConfirmation);
+        
+        btnOpenReportModal.addEventListener('click', () => {
+            reportIssueModal.style.display = 'flex';
+            lucide.createIcons();
+        });
+        btnCloseReportModal.addEventListener('click', closeReportModal);
+        reportIssueForm.addEventListener('submit', handleReportIssueSubmit);
+
+        btnOpenChangePackageModal.addEventListener('click', () => {
+            const currentPackage = allPackages.find(p => p.id === currentCustomer.paketId);
+            document.getElementById('current-package-info').textContent = currentPackage ? currentPackage.nama : 'Tidak terdaftar';
+            
+            const newPackageSelect = document.getElementById('new-package');
+            newPackageSelect.innerHTML = '<option value="">Pilih paket baru...</option>';
+            allPackages
+                .filter(p => p.id !== currentCustomer.paketId)
+                .forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p.id;
+                    option.textContent = `${p.nama} - ${formatRupiah(p.harga)}`;
+                    newPackageSelect.appendChild(option);
+                });
+
+            changePackageModal.style.display = 'flex';
+            lucide.createIcons();
+        });
+        btnCloseChangePackageModal.addEventListener('click', closeChangePackageModal);
+        changePackageForm.addEventListener('submit', handleChangePackageSubmit);
+
         btnCloseSuccessModal.addEventListener('click', () => { successModal.style.display = 'none'; });
 
         // Initialize App
@@ -467,7 +620,6 @@ Berikut bukti transfernya. Terima kasih.`;
                 await signInAnonymously(auth);
                 await loadPackages();
             } catch (error) {
-                console.error("Initialization failed:", error);
                 errorMsg.textContent = "Tidak dapat terhubung ke server.";
                 checkBtn.disabled = true;
                 customerIdInput.disabled = true;
@@ -478,3 +630,4 @@ Berikut bukti transfernya. Terima kasih.`;
     </script>
 </body>
 </html>
+
